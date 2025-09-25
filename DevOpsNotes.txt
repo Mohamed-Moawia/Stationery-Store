@@ -1,0 +1,303 @@
+when using cp & rm commands with Directories we must use the -r option to be able to excute the commands but with mv there is no need
+rm -rf * =======> this is a very very dangorous cammand with no turing back
+==========================================================================================================================
+==========================================================================================================================
+==========================================================================================================================
+# VIM Editor Shortcuts used from Command Mode:
+G ---> to go to the end of the file
+gg ---> to go the the start of the file
+yy ---> to copy line
+p ----> to paste copied line after the cursor
+(n)yy --->  where n is the number of lines needed to be copied after the cursor 
+w ---> to move forwar word by word in a line
+b ---> to move back word by word in a line
+:se nu ---> from advanced mode to enable the line numbering
+/(String) ---> to search for anything inside the file
+u ---> to undo changes made
+P ----> to paste copied line befor the cursor
+dd ---> to cut line and also use as a delete machanizim if you didnot do pasting and saved the file data is deleted 
+:%s/keyword/replaced keyword/g ----> to search and repalce words in a file or use g for globaly change the word in the entire file
+==========================================================================================================================
+==========================================================================================================================
+==========================================================================================================================
+					  ***************************************
+					  *    				        *
+                                          *    Everything in Linux is a FILE    *
+					  *					*
+					  *					*
+					  ***************************************
+
+Types of files in Linux:
+- (this means regular file ither text or binary)
+d (this means a Directory)
+c (this means Character file as for keybord or tty terminals)
+b (this means a storage hardware as disk or usb)
+l (this means a linked file or a shortcut to a file ither softlink or a hardlink)
+file ----> command to show file types
+==========================================================================================================================
+==========================================================================================================================
+filters:
+grep ---> to find keywords in configuration files or any files within the system
+grep -iR keyword path ---> this will search in the given path ither it contains files or folders for that keyword dispite case sensetivty
+
+less ---> is a reader command giving advanced usage features as VIM
+
+head ---> to display the first lines of a file
+
+tail ----> to display the last lines of a file 
+tail -f -----> will display the last lines of a log file dynamicaly as message comes to it handy with debuging system file messages
+
+
+cut ---> to print data in the standard output from good delemetraized files 
+cut -d(the used seperation symoble) -f(for filed selection) path to file
+awk ----> is for same usage but is more advanced for scripts 
+awk -F: '{ print $1 }' /etc/passwd
+
+
+sed ---> to search and replace keywords in one or any files
+sed 's/yy/tt/g' DevOpsNotes.txt ----> this will cat the needed changes to the standard output without saving
+sed -i 's/yy/tt/g' DevOpsNotes.txt ----> using the option i will save needed changes to file 
+==========================================================================================================================
+==========================================================================================================================
+==========================================================================================================================
+Files Redirection:
+
+> ----> to redirect standard output to file
+>> ----> to appaend to the end of the same file without overwriting it
+2>,2>> ----> to redirect or appaend error messages
+&>,&>> ----> to redirect or appaend both outputs to a file
+
+| ----> piping cammand to each other so the first command becomes the input for the next command
+wc -l ----> for line counting or for files counting in a given directory
+
+find ----> to search for files in real time
+locate ----> to search in files but not in real time instaed inside the program datebase which needs to update first using updatedb
+
+
+/dev/null ----> any redirections to that file is like a solarsystem blackhole
+df -h ----> for disk usage
+free -m -----> for Memory usage
+uptime ----> for system info usage time
+date ----> for time command
+cp -r * (path-to-becopied-to) -----> useful command to copy all content inside a folder to anywhere
+
+
+==========================================================================================================================
+==========================================================================================================================
+==========================================================================================================================
+Users and Groups:
+id (username) -----> to get info on sepcific user
+useradd (username) -----> to create a sepcific user
+userdel (username) -----> to delete a sepcific user
+usermod -aG (group name) (username) -----> to add a secoundry group to a user
+groupdel (groupname) -----> to delete a sepcific group
+passwd (username) -----> to create a password or to reset it for a sepcific user
+lsof -u (username) -----> this command will get detailed info of what the current loged-in user is doing and which files he is working on
+chown (username):(groupname) filepath -----> to change ownership of a file to a sepcific user and group
+chmod 777 filepath -----> to change the file permions first numeric gives full permiosn for ownersuer,secound numeric gives full permions for group and third numeric gives full permions for everyone else (read=4,write=2,execute=1)
+editing the /etc/group file with usernames seprated by , will add these users to that group
+sudo -i ---> will allow gurrent user to switch to root user 
+visudo ---> will edit the sudoers file so that root  perivileges can be granted to normal users and also making them run commands without using their password
+editingfiles or creating one with username or groupname (for group we use %(groupname) in the /etc/sudoers.d/ directory will give the same effect as editing the sudoers file but it is more safer
+username ALL=(ALL:ALL) NOPASSWD: ALL
+==========================================================================================================================
+==========================================================================================================================
+==========================================================================================================================
+PakageManagers and system pakages installations:
+curl/wget ----> are both used to download files to the system
+wget URL / curl URL -o outputfile ---> this will use the url given and direct its output using -o option the the name of the fileandpath given to save it 
+rpm/dpkg ----> used ither in centos Or ubuntu like systems to manualy install downloaded pakages through the -i option
+rpm -i packagename in RedHat OS
+dpkg -i packagename in Debian OS
+yum/apt ----> these are the used pakage managers to install software and its dependencies automaticaly 
+/etc/yum.repos.d/ for yum
+/etc/apt/sources.list & /etc/apt/sources.list.d for apt
+==========================================================================================================================
+==========================================================================================================================
+==========================================================================================================================
+System running servicess:
+using systemd to manage system services and enabling onboot startup
+systemctl start (servicename)
+systemctl stop (servicename)
+systemctl status (servicename)
+systemctl enable (servicename)
+systemctl is-active (servicename)
+systemctl is-enabled (servicename)
+
+when installing pakages through a pakagemanager it create a file with instaractions on how to handel the service by systemd
+/etc/systemd/system/multi-user.target.wants/(servicename.service)
+
+==========================================================================================================================
+==========================================================================================================================
+==========================================================================================================================
+Proccess:
+top ----> will dynamically on realtime show running proccess and thier PID with memeory/cpu consubtion with extra info on system info 
+ps aux -----> will print the current system proccess state and exits
+ps -ef ----> will print the PID and its PPID wich is handy for terminating unneeded proccess
+ps -ef | grep (servicename) | awk '{print $(columnumber)}' | xargs kill ----> this will list PPID and PID for a given service then filters their colume then use that as an argument for the kill command GRACFULLY but with -9 option it will FORCEVLY close all Proccess 
+==========================================================================================================================
+==========================================================================================================================
+==========================================================================================================================
+Cretaing Archives:
+tar ----> deafult tool to create archives
+tar -czvf (archivefilename.tar.gz) (pathtofileneededtobearchived) ----> for creating the archive file
+tar -xzvf (archivefilename.tar.gz) -C (pathtoextractedplace) ----> for extracting the archive file and the -C option to set extracting path
+zip/unzip ----> should first be installed then used
+zip -r (archivename.zip) (files needs to be archived) -------> to create 
+zip (archivename.zip) -------> to extract
+
+==========================================================================================================================
+==========================================================================================================================
+==========================================================================================================================
+Ubuntu Specific:
+adduser ----> to create a user and all needed stuff
+nano ----> is default editor and running (export EDITOR=vim) will change that in the current shell only
+apt purge (pakagename) -----> will cleanlly remove the pakage with all its data and configurations
+==========================================================================================================================
+==========================================================================================================================
+==========================================================================================================================
+Vagrant Software:
+for creating local VM enviroments replicas for consistents development and testing enviroenments default Virtualization provider is Virtualbox
+vagrant init (vagrantOS name from the vagranthub) ----> this will create a Vagrantfile which contains all vm configuration
+vagrant up ----> to create and start the vm  in virtulabox
+vagrant global-status ----> to show all the vm status 
+vagrant globale-status --prune ----> to clean the vagrant environment completely
+vagrant halt ----> to stop and shutdown
+vagrant reload ----> to read the vagrantfile changes without restarting the vm
+vagrant destroy ----> to delete all releated files for the vm and the vm itself
+vagrant ssh ----> this ssh to inside the vm with the default username vagrant
+.vagrant ----> is a located hidden folder within the vm folder conatining all info and ssh keyfiles for that vm
+~/.vagrantd ----> is a hidden folder located in the users home directory containing all related infos and files for the vagrant software and the downloaded running VMs
+to create a persisting storage and syncing folder data bettween the host and the guest vm we edit the configuration line within the vagrantfile the first half is for the host folderpath and the other half is for the vm guest path and it is created automayically within the vm
+for WINDOWS systems:
+config.vm.synced_folder "(partition-driverletter):\\(path-to-created-folder-to-be-used)", "path-wanted-on-the-vm-guest" ----> keep an eye on the back doubble slahs.  
+config.vm.synced_folder "absolute path as written in linux", "path-wanted-on-the-vm-guest" ----> this is for MacOS and linux systems   
+Provisioning or bootstarping as every techknolgy name it -----> it is running speacial commands using a provisioner (shell,ansible,chef,docker,puput) it's main perpouse is to run need commands the first time the vm is created and booted, one important thing is that -y should always be used with the wanted commands or use commands that does no require asking questions so that the provisoning proccess does not fail
+this is done within the Vagarntfile last part purposed for provissioning section
+==========================================================================================================================
+==========================================================================================================================
+==========================================================================================================================
+Python, Yaml, Jason:
+Data structure:
+variables ----> a memory reservation for data to be stored on as long as the program is executed 
+(variablename)=(variablevalue)
+num=123 ---> integer data
+name="Mohamed" ----> string data bettween doublequotes
+list=[variables, var, var] -----> this is list which contains set of different variables seperated by comma and can be sliced or accessed through index number 
+devops=["skill", 1234, 12.4, true] 
+print(devops[1]) ----> this will get the second variable in the list (1234) 
+dictionary={key:value, key:value} ----> this is dictionary with a key value pair that is accessed through the name of the key
+print(dic["key"][1]) ----> this will get the value of the given key and slic it to print from it only second charachter in it 
+DevOps engineer should beable to read jason files and write Yaml files ------> they both consistes for Dictionary and list datatype structure with Jason sticks to the curly breasses while the Yaml removes all the bresasee and sticks to INDENTATION (white spaces to sets the leveling) the main concept is netsing KEY:VALUE pairing 
+==========================================================================================================================
+==========================================================================================================================
+==========================================================================================================================
+netstat -antp -----> to show service used ports with PID
+ss -tunlp -----> same results but new command
+nmap (servername/IP) ------> to scan for opened ports
+dig/nslookup ----> for DNS quieries
+mtr (servername/IP) ----> used to traceroute destination for packet loss dynamically in real time for connectivty troubleshooting 
+==========================================================================================================================
+==========================================================================================================================
+==========================================================================================================================
+Docker containers:
+docker ps -----> to check running containers using -a option will list all containers running and not
+docker run -d -p (hostport:containerport) -name (containername) (imagename) ----> to create a container  
+docker build -t (imagename) -----> to build an image locally from a Dockerfile
+docker images ----> list avilable images in local store
+docker rm (containers ID) ----> to remove containers by providing their names/IDs seperated by speace
+docker rmi (Image ID) ----> to remove an image/images by providing their IDs seperated by speace
+docker inspect (containername) ----> to get detailed info on the container and os running
+docker compose up -d ----> to run containers from docker-compose.yml file 
+docker compose down ----> to shutdown nad remove containers
+docker system prune -a -----> to delete all containers and related storage, network, images full system cleanning
+From the desgin point of view their is Monolethic application (which is an application with multi services all writen in one language or using single technology), Microservice application (which is an application with subservices each is writen in a different langauage or differnet technology and comunicates with each oter through an API gateway that handels the talking using Containerization technology)
+==========================================================================================================================
+==========================================================================================================================
+==========================================================================================================================
+Bash Scripting:
+Set of commands in specific order in a text file to be executed whenever needed
+we can use scripts arguments decleared inside our script as ($1..$9) and enter them after the scripts name ($0--> is erserved for the scripts name) ./scriptname $1(first-argumentname) but till $9(eightes argument name)
+$? ---> this gives back the last runned command status (0) means runned succsuffly (any other number) means failed 
+$variablename ---> for using defined variables
+command substitution using ither $(command to run) or `command` ---> this is a backtik
+to make variable permmenat and accessibale for all users we set the /etc/profile 
+to make it for a useronly we edit the .bashrc or .profile file for that user 
+export (variablename)=(value)
+read (variablename) ----> will take input from the user and san=ve init in this variable for usage
+==========================================================================================================================
+==========================================================================================================================
+==========================================================================================================================
+Conditions statements:
+if [[ $variablename (comparison-operator) condition-to-check(operand) ]]
+then
+   (do this if condition is true)
+elif [[ $variablename (comparison-operator) condition-to-check(operand) ]]
+then
+   (do that if the elif condition is true )
+else
+ ( do that in the end if past conditions resolves to false)
+fi
+
+==========================================================================================================================
+==========================================================================================================================
+==========================================================================================================================
+crontab -e -----> to edit cron jobs and create a sceduale task :
+Minutes hours day0fthemonth month dayoftheweek command-to-be-run
+* * * * 1-5 path-to-scriptfile &>> to-log-filepath.log -----> this tells the schedual to run every minute every hour every day of the month every month (days of the week start with Sunday as 0) so here we will run starting Monday up to Friday that is 1 to 5 then the path to the script to be runed and the logfile to save in
+==========================================================================================================================
+==========================================================================================================================
+==========================================================================================================================
+For Loops:
+for i in {1..100..2}
+do 
+ this code      --------------------> this is iterating on list of numbers incremented by 2
+done
+
+for (( c=0; c<=10; c++ ))
+do
+   this code    ---------------------> this validates if c is less than or equal to this exacte number and iterates untill condition is false
+done
+==========================================================================================================================
+==========================================================================================================================
+==========================================================================================================================
+Authenticating to servers through ssh key pair:
+ssh-keygen ----> this will create a ssh key pair to be used with authentication in the current users homedirectory ssh folder
+ssh-copy-id usernamw@serversname/IP ------> this will copy genetared public key the the destiend server on the used username home ssh folder and now can autheticate without using any password but with the priavte created key
+now we can issuse the following example command with now password and on the fly ( ssh devops@web01 uptime )
+
+CODING BOOTCAMP ------> Youtube channel for devops technology
+==========================================================================================================================
+==========================================================================================================================
+==========================================================================================================================
+
+AWS Cloud Computing:
+using elastic resourcess (ec2, EBS ) first for compute,ram reussorce the secound is for storage the same experince as vmware esxi
+except everything is paid for 
+snapshot is taken on the volume level using that for recovery from corruption, resizing volume, eyncrutping volume, Region changes,
+fdisk commands for disk partition:
+fdisk -l ---> to list all disks
+fdsik /dev/diskname ---> to select the disk, m for help menu, n to create new partition, p for primary, 1 for first partition, w to apply
+mkfs.ext4 /dev/partitionname ----> this will formate the partition we can use what layout we want
+edit fstab ----> to permenantily mount the disk /dev/partitionname  folderpathtomountin  partitionlayout  defaults 0 0 
+in case of mysql,mariadb we create the mountpoint befor installation so it canbe used /usr/lib/mysql
+if we made a snapshoot from the root partition that contains the os we can create an image outof its snaphoot also we can copy it to anywhere else
+ELB ----> this is the AWS loadbalancer (classic loadbalancer) uses facing and backend ports for network comunincation, (Application loadbalancer) this is for HTTP/HTTPS webapp,websites uses a target group of instance(pool) or containers to route the traffic bettween using health-check parameters, (Network loadbalancer) this is used for network layer (layer 4) exepensive one 
+AMI ----> are instance created images which we can do from the action pane of the instance, which is then be a template for such deployments 
+S3 bucket ----> onedrive for data storage no public by default and have version control whats intersting the datalifecycle which enables to transfer data according to data-age to another storage type for money savings, also use case for serving static websites for zero maintamnence
+NFS ----> network shared storage for cluster and filesharing setups instance connect to it using access-points and installed drivers on ec2
+AutoScaling -----> this is for scalling instance in/out as needed based on created alarms through health-checks of the Loadbalancers using given templates (no ec2 interaction at all ) all needed changes are done through templates ither reconfiguration or creating new ones with instance refresh to terminate old instance and create new ones
+RDS ----> this is Database servers instance created by AWS releaving database administration tasks including fine tunining backups replication with backup server also offering Read only replicas for the given database
+
+==========================================================================================================================
+==========================================================================================================================
+==========================================================================================================================
+Now for the Vproifle project with Autoscalling:
+1- Mysql server with maraidb using CentOS with proviging
+2- memchache
+3- Rabbitmq
+4- tomcat9 on Ubuntu with attaching an IAM role with S3 adminfullaccess to be able to fetch artifact from the S3 bucket and run cp command manualy from within the instance, we stop the tomcat cp the artifact to /var/lib/tomcat/webapps/BOOT.war and bringing the service backon will automatically extract that folder with BOOT folder within the same directory
+5- TargetGroup for the ELB
+6- Route53 ---> the internall DNS server service running within AWS to provide resolve service for instance internally using the private ip
+7- create the image from the application instance and lunch template to create a template for usage with the Autoscalling part
+8- Autoscalling
