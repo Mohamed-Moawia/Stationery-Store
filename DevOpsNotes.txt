@@ -301,3 +301,10 @@ Now for the Vproifle project with Autoscalling:
 6- Route53 ---> the internall DNS server service running within AWS to provide resolve service for instance internally using the private ip
 7- create the image from the application instance and lunch template to create a template for usage with the Autoscalling part
 8- Autoscalling
+==========================================================================================================================
+==========================================================================================================================
+==========================================================================================================================
+jenkiens of Continous Integeration:
+running jenkiens on an ec2 instance access it through portall:8080 install needed plugins for installed tools on the server:
+1- by default it comes with meaven for build tools 
+2- JDK must be installed on server befor jenkiens can be installed (/usr/lib/java), we can run different version of it on the same server and source that on the freestyle GUI jankiens webinterface for job creation

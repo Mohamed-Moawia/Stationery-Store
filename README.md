@@ -28,7 +28,8 @@ This repository is a living portfolio of my DevOps path—from foundational conc
 - Nginx, Apache, PHP-FPM
 - MariaDB/MySQL, Redis
 - GitHub Actions, Jenkins
-- Ubuntu & Alpine Linux
+- Ubuntu CentOS & Alpine Linux
+- AWS Cloud
 - Office 365 IMAP/SMTP integration
 - SSL via Nginx Proxy Manager
 
@@ -43,4 +44,3 @@ This repository is a living portfolio of my DevOps path—from foundational conc
 This is a personal learning repository, but if you find something useful or want to collaborate, feel free to fork, star, or open an issue!
 
 ---
-
