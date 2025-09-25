@@ -304,7 +304,7 @@ Now for the Vproifle project with Autoscalling:
 ==========================================================================================================================
 ==========================================================================================================================
 ==========================================================================================================================
-jenkiens of Continous Integeration:
-running jenkiens on an ec2 instance access it through portall:8080 install needed plugins for installed tools on the server:
+jenkins of Continous Integeration:
+running jenkins on an ec2 instance access it through portall:8080 install needed plugins for installed tools on the server:
 1- by default it comes with meaven for build tools 
-2- JDK must be installed on server befor jenkiens can be installed (/usr/lib/java), we can run different version of it on the same server and source that on the freestyle GUI jankiens webinterface for job creation
+2- JDK must be installed on server befor jenkins can be installed (/usr/lib/java), we can run different version of it on the same server and source that on the freestyle GUI jankiens webinterface for job creation
