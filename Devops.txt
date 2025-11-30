@@ -1,0 +1,172 @@
+Devops is a framework bringing Devlopement and operation togeather in one team.
+to only speed up production and deployments without any issues:
+1- quality 
+2- automation
+3- secuirty
+4- recovery
+
+CI/CD ===> it is always a LOOP for feedback while the shared code Repos are frequently updated shared across different teams working in cloud environments
+
+Reference Architecture:
+Translate Buesines Goals 
+Develop application according to customers needs
+end to end result in mind and responsibility
+continous improvement
+alwyas automate as possible
+
+
+Devops princibles:
+1- Automation
+2- Collaboration
+3- Portfolio and Configuration management
+4- Integration
+
+Well Documentation of Building blocks ARTIFACTS
+
+
+DevOps Components and DevSecOps :
+1- Culture
+2- Secuirty by desgin 
+3- Automation
+
+These Layers that are applyed over each other to enhance the Delivery system and Qualtiy 
+
+It is always looping improvements on Business Delivery Value according to customer needs
+
+Using RBAC and IAM for Repositories Security Management:
+1- Role Based Access Control RBAC 
+2- Static Application Security Testing SAST
+3- Software Compostion Analysis SCA
+4- Dynamic Application Security Testing DAST
+
+Always aim for LEAST PRIVILEGES Princibale in security access implementations 
+in every asspect of the life cycle of development and deployment
+
+Devops-DevSecOps Pipeline layers:
+1- Pull Code
+2- Build 
+3- Test
+4- Security Scans (including linting-Dependecy check-static analysis- scan- dynamic analysis)
+5- Deploy
+
+sighted that security step is involved all the way of the pipeline to insure clean application deployment and quality product
+
+
+DevSecOps implemantation Pipeline through Different Cloud providers:
+1- AWS meanly uses diffrent Security Groups rules in applying policies for different security asspects using different services:
+S3 for Code pulling and applying static scaning
+AWS Kubernets cluster service for dev containers implentation and vurnabilty scaning and testing
+then production shifting deploments
+
+2- Azure meanly uses Azure Policies and Azure vault for secret key managment also Azure registry for container images hosting and vurnabilty scaning
+Azure Kubernets platform and Application Gateway production phase
+
+3- Google cloud mealy uses Thanos and jfrog for ingerating bettween on-prem infra and cloud infra using jfrog xray as a scaning engine and thanos kubernets platform for concatinating bettween on-prem and cloud platform
+
+DevSecOps security Framework:
+NIST
+CIS
+ISO 27001
+
+these are sets of Documentation best practises and conrollers that emphasise the security development licfe cycle
+most of which are implemented in cloud provider ( AWS security Hub - Azure Scurity Center)
+
+Aduitd ===> provides auditctl that enables through certine rules attached to the kernel to audit proccess running (/etc/audit/rules.d/audit.rules), and aquiring Logfiles in ( /var/log/audit/audit.log)
+
+Docker ==> Main containarization platform offering packaged application with all needed software and dependensis that make it possible to run on any supported OS running Docker engine
+through the client server archiacture we can manage the docker deamon responsble for creating,running images through the cli client 
+
+
+Redhat Podman is really intersting subject
+
+Kubernets WOW the Dockerization Orechestrator management tool it can aquire Nodes from both Docker engine Or Podman engine 
+
+
+Docker images:
+they are layers on top if each others 
+1- docker image pull imagename:imagetag
+2- docker save imagename -o filename.tar
+3- docker save imagename > backefilename.tar
+4- tar tvf backefilename.tar
+5- docker history imagename (will show image different layers)
+
+
+Dockerfile ===>
+1- docker build -f /path/to/Dockerfile -t dockerhubrepo/username:tag 
+2- FROM the choosen Base system image
+3- RUN the layers that is needed to be add through running set of software  installation commands
+4- COPY /source/host/file/path /destination/container/file/path
+5- EXPOSE port container number to be published 
+6- CMD ["Initional", "Comand", "to", "run in side the container", "at start"]
+
+
+docker container management :
+docker inspect -f (output format json,TEMPLATE) containerNAME/ID
+docker run -it containerNAME/ID /shell/path
+docker exec -it containerNAME/ID /shell/path OR Command to run overriding the start up command
+
+
+Docker Images Optimization :
+1- Dockerfile Order is very important
+######################################################
+FROM iamgeName AS buildNAME
+WRKDIR /container/app/path
+COPY package.jason . ==> for dependenses software needs
+RUN all required software installation
+
+FROM imageNAME
+COPY --from=buildNAME /conatiner/app/path /to/the/new/conatiner/path
+CMD ["the intional", "command to run"]
+############################################################
+this will produce an enhanced mush possible footprint image to be used
+
+2- using Distroless images than complete ones
+Docker Distroless containers are designed to be minimal and do not include a full operating system. Instead, they only contain the application and its runtime dependencies, excluding components like shells, package managers, or debugging tools. This approach reduces the attack surface and improves security.
+
+The base operating system for most Distroless images is Debian 12 (Bookworm). These images are explicitly tagged with the Debian version (e.g., -debian12) to ensure clarity and compatibility. While the images are stripped of unnecessary OS components, they still rely on Debian's core libraries and runtime dependencies to function.
+
+For example:
+
+The smallest Distroless image, gcr.io/distroless/static-debian12, is approximately 2 MiB in size, significantly smaller than traditional base images like Alpine or full Debian distributions.
+
+By using Debian as the foundation, Distroless containers benefit from Debian's security updates and stability while maintaining a minimal footprint
+
+
+Docker Security Practise:
+1- always don't run containers with root privileges
+2- use Apparmor, SElinux, Seccomp security proffiles to secure kernel and file access
+3- always update the docker engine and kernel security patches
+4- Disable SETUID & SETGID using --cap-drop option while running the docker run container command 
+
+
+Docker Capabilities:
+These are the docker granulity secuirty features that enables us to controle every aspect of the container proccess
+using --cap-drop, --cap-add to either enable  or disbale a capabilty as needed
+
+Notary server-client repo that enables container integrity check and singing ====
+export DOCKER_CONNECT_TRUST=1/0 ====>this enables the env variable
+export DOCKER_CONNECT_TRUST_SERVER=https://notary_server:4443 ====> seting the local running container instanace that was created using the github repo docker-compose.yml file 
+
+Docker Registery for images hosting and tracking :
+1- registery is like git a kindof version controlling sysetm that keeps track of the layers minbulated on the image 
+2- we can create an on-prem/local server for pull/push images as online repos registery have pull/push time limitation 
+
+we should integrate our registry with an online one + notary signer to achive images security and quality
+
+
+Docker Host Deamon security:
+1- attach apparmor, selinux security profiles to docker for added layer of protection
+2- use Seccomp for systemcall kernel application interaction for protection
+3- use docker bench security script to run security bench marks for the host configuration ,demon configuration, container ruuning configuration
+4- use lynis for security bench marks security that can lead to enhanced security levels implemntation
+
+Container Images Scanning tools:
+1- Dockerhub scanning tool
+2- dagda an opensource
+3- clairand quay opensource
+4- Anchor ===> has docker image with cli client and server that enables the image scanning and vurnabilites asist 
+5- Dive ==> has docker image from Quay that scans the image layers and represent them in tree formate with detatiled file system permission on each layers file
+
+Gui managment tools for Docker :
+1- Portainer
+2- Rancher ---> this should be examiend for deployment (that is a complete Containerization and Orchastration Project) 
