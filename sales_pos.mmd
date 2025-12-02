@@ -1,0 +1,82 @@
+erDiagram
+    BRANCHES ||--o{ TILLS : has
+    USERS ||--o{ POS_SESSIONS : opens
+    TILLS ||--o{ POS_SESSIONS : tracks
+    CUSTOMERS ||--o{ INVOICES : billed
+    BRANCHES ||--o{ INVOICES : issues
+    TILLS ||--o{ INVOICES : from
+    INVOICES ||--o{ INVOICE_LINES : contains
+    INVOICES ||--o{ PAYMENTS : paid
+    VAT_RATES ||--o{ INVOICE_LINES : taxed
+
+    CUSTOMERS {
+      uuid customer_id PK
+      string name_ar
+      string name_en
+      string tax_number
+      string customer_type
+      string address
+      string phone
+      string email
+    }
+    TILLS {
+      uuid till_id PK
+      uuid branch_id FK
+      string name
+      boolean is_pos_enabled
+    }
+    USERS {
+      uuid user_id PK
+      string username
+      string password_hash
+      string full_name
+      uuid role_id FK
+      uuid branch_id FK
+      boolean is_active
+    }
+    POS_SESSIONS {
+      uuid session_id PK
+      uuid till_id FK
+      uuid opened_by FK
+      uuid closed_by FK
+      numeric opening_float
+      numeric closing_total
+      string status
+    }
+    INVOICES {
+      uuid invoice_id PK
+      string invoice_number
+      uuid branch_id FK
+      uuid customer_id FK
+      uuid till_id FK
+      string currency_code
+      string invoice_type
+      string status
+      numeric sub_total
+      numeric discount_total
+      numeric vat_total
+      numeric grand_total
+      string eta_uuid
+      string signed_hash
+      timestamp issue_date
+    }
+    INVOICE_LINES {
+      uuid line_id PK
+      uuid invoice_id FK
+      uuid product_id FK
+      string description
+      numeric quantity
+      numeric unit_price
+      numeric discount_amount
+      uuid vat_rate_id FK
+      numeric vat_amount
+      numeric line_total
+    }
+    PAYMENTS {
+      uuid payment_id PK
+      uuid invoice_id FK
+      string method
+      numeric amount
+      string transaction_ref
+      timestamp received_at
+    }

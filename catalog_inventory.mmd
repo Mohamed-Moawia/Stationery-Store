@@ -1,0 +1,78 @@
+erDiagram
+    CATEGORIES ||--o{ PRODUCTS : contains
+    UNITS ||--o{ PRODUCTS : "priced in unit"
+    VAT_RATES ||--o{ PRODUCTS : "taxed by"
+    BRANCHES ||--o{ INVENTORY_LOCATIONS : has
+    INVENTORY_LOCATIONS ||--o{ INVENTORY_STOCK : holds
+    PRODUCTS ||--o{ INVENTORY_STOCK : tracked
+    PRODUCTS ||--o{ INVENTORY_MOVEMENTS : moved
+    INVENTORY_LOCATIONS ||--o{ INVENTORY_MOVEMENTS : "from"
+    INVENTORY_LOCATIONS ||--o{ INVENTORY_MOVEMENTS : "to"
+    PRODUCTS ||--o{ TAX_MAPPINGS : mapped
+
+    CATEGORIES {
+      uuid category_id PK
+      string name_ar
+      string name_en
+      uuid parent_category_id FK
+    }
+    PRODUCTS {
+      uuid product_id PK
+      string sku
+      string barcode
+      string name_ar
+      string name_en
+      uuid unit_id FK
+      uuid category_id FK
+      numeric cost_price
+      numeric sale_price
+      uuid vat_rate_id FK
+      boolean is_active
+    }
+    UNITS {
+      uuid unit_id PK
+      string code
+      numeric conversion_factor
+    }
+    VAT_RATES {
+      uuid vat_rate_id PK
+      string name
+      numeric rate
+      string eta_tax_type_code
+    }
+    BRANCHES {
+      uuid branch_id PK
+      string name
+      string address
+      string tax_activity_code
+      boolean is_active
+    }
+    INVENTORY_LOCATIONS {
+      uuid location_id PK
+      uuid branch_id FK
+      string name
+    }
+    INVENTORY_STOCK {
+      uuid stock_id PK
+      uuid product_id FK
+      uuid location_id FK
+      numeric quantity_on_hand
+      numeric reorder_level
+    }
+    INVENTORY_MOVEMENTS {
+      uuid movement_id PK
+      uuid product_id FK
+      uuid from_location_id FK
+      uuid to_location_id FK
+      numeric quantity
+      string movement_type
+      string reference_type
+      uuid reference_id
+    }
+    TAX_MAPPINGS {
+      uuid mapping_id PK
+      uuid product_id FK
+      string eta_item_code
+      string eta_unit_code
+      string eta_tax_type_code
+    }

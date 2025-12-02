@@ -1,0 +1,52 @@
+erDiagram
+    SUPPLIERS ||--o{ PURCHASE_ORDERS : receives
+    PURCHASE_ORDERS ||--o{ PO_LINES : contains
+    PURCHASE_ORDERS ||--o{ GOODS_RECEIPTS : fulfilled_by
+    GOODS_RECEIPTS ||--o{ GRN_LINES : contains
+    BRANCHES ||--o{ PURCHASE_ORDERS : issues
+    BRANCHES ||--o{ GOODS_RECEIPTS : receives
+    PRODUCTS ||--o{ PO_LINES : ordered
+    PRODUCTS ||--o{ GRN_LINES : received
+    INVENTORY_LOCATIONS ||--o{ GRN_LINES : stored
+
+    SUPPLIERS {
+      uuid supplier_id PK
+      string name
+      string tax_number
+      string address
+      string contact_phone
+      string contact_email
+    }
+    PURCHASE_ORDERS {
+      uuid po_id PK
+      string po_number
+      uuid supplier_id FK
+      uuid branch_id FK
+      string status
+      date expected_date
+      numeric total_amount
+    }
+    PO_LINES {
+      uuid po_line_id PK
+      uuid po_id FK
+      uuid product_id FK
+      numeric quantity
+      numeric unit_cost
+      numeric line_total
+    }
+    GOODS_RECEIPTS {
+      uuid grn_id PK
+      uuid po_id FK
+      uuid supplier_id FK
+      uuid branch_id FK
+      timestamp received_at
+      string status
+    }
+    GRN_LINES {
+      uuid grn_line_id PK
+      uuid grn_id FK
+      uuid product_id FK
+      numeric quantity
+      numeric unit_cost
+      uuid location_id FK
+    }

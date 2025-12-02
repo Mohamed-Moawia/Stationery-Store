@@ -1,0 +1,23 @@
+erDiagram
+    USERS ||--o{ AUDIT_EVENTS : performs
+    BRANCHES ||--o{ RECONCILIATION_JOBS : runs
+    INVOICES ||--o{ AUDIT_EVENTS : tracked
+    ETA_INVOICES ||--o{ RECONCILIATION_JOBS : compared
+
+    AUDIT_EVENTS {
+      uuid event_id PK
+      string entity_type
+      uuid entity_id
+      string action
+      uuid performed_by
+      timestamp timestamp
+      jsonb snapshot
+    }
+    RECONCILIATION_JOBS {
+      uuid job_id PK
+      uuid branch_id FK
+      date from_date
+      date to_date
+      string status
+      jsonb report_json
+    }

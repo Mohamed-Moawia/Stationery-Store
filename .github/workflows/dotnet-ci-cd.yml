@@ -7,26 +7,34 @@ on:
   pull_request:
     branches: [ main ]
   schedule:
-    # Daily build at 2 AM Egypt time
+    # Daily build at 2 AM Egypt time (UTC+2). GitHub Actions cron uses UTC.
     - cron: '0 0 * * *'
 
 env:
   DOTNET_VERSION: '8.0.x'
   POSTGRES_VERSION: '15-alpine'
   REDIS_VERSION: '7-alpine'
-  
+  # Use repository secrets for test DB (set these in repo settings)
+  TEST_DB_NAME: ${{ secrets.TEST_DB_NAME }}
+  TEST_DB_USER: ${{ secrets.TEST_DB_USER }}
+  TEST_DB_PASSWORD: ${{ secrets.TEST_DB_PASSWORD }}
+
 jobs:
   build-and-test:
     name: Build and Test (Egypt Compliance)
     runs-on: ubuntu-latest
-    
+    env:
+      # Job-level env as fallback
+      TEST_DB_NAME: ${{ env.TEST_DB_NAME }}
+      TEST_DB_USER: ${{ env.TEST_DB_USER }}
+      TEST_DB_PASSWORD: ${{ env.TEST_DB_PASSWORD }}
     services:
       postgres:
         image: postgres:${{ env.POSTGRES_VERSION }}
         env:
-          POSTGRES_DB: StationeryStoreTest
-          POSTGRES_USER: test_user
-          POSTGRES_PASSWORD: Test@Egypt2024
+          POSTGRES_DB: ${{ env.TEST_DB_NAME }}
+          POSTGRES_USER: ${{ env.TEST_DB_USER }}
+          POSTGRES_PASSWORD: ${{ env.TEST_DB_PASSWORD }}
         options: >-
           --health-cmd pg_isready
           --health-interval 10s
@@ -34,7 +42,6 @@ jobs:
           --health-retries 5
         ports:
           - 5432:5432
-      
       redis:
         image: redis:${{ env.REDIS_VERSION }}
         options: >-
@@ -44,16 +51,16 @@ jobs:
           --health-retries 5
         ports:
           - 6379:6379
-    
+
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
-      
+
     - name: Setup .NET
       uses: actions/setup-dotnet@v3
       with:
         dotnet-version: ${{ env.DOTNET_VERSION }}
-        
+
     - name: Cache NuGet packages
       uses: actions/cache@v3
       with:
@@ -61,15 +68,53 @@ jobs:
         key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj') }}
         restore-keys: |
           ${{ runner.os }}-nuget-
-          
+
     - name: Install dependencies
       run: dotnet restore
-      
+
+    - name: Wait for Postgres and Redis
+      run: |
+        set -euo pipefail
+        echo "::group::Wait for services"
+        echo "Waiting for Postgres..."
+        for i in $(seq 1 30); do
+          if pg_isready -h localhost -p 5432 -U "${{ env.TEST_DB_USER }}" >/dev/null 2>&1; then
+            echo "Postgres is ready"
+            break
+          fi
+          echo "Postgres not ready yet ($i/30)..."
+          sleep 2
+        done
+        if ! pg_isready -h localhost -p 5432 -U "${{ env.TEST_DB_USER }}" >/dev/null 2>&1; then
+          echo "Postgres did not become ready in time"
+          exit 1
+        fi
+
+        echo "Waiting for Redis..."
+        for i in $(seq 1 30); do
+          if redis-cli -h localhost -p 6379 ping 2>&1 | grep -q PONG; then
+            echo "Redis is ready"
+            break
+          fi
+          echo "Redis not ready yet ($i/30)..."
+          sleep 2
+        done
+        if ! redis-cli -h localhost -p 6379 ping 2>&1 | grep -q PONG; then
+          echo "Redis did not become ready in time"
+          exit 1
+        fi
+        echo "::endgroup::"
+
     - name: Build with Egyptian settings
       run: dotnet build --configuration Release --no-restore /p:IncludeEgyptianLocalization=true
-      
-    - name: Run Egyptian-specific tests
+
+    - name: Run Egyptian-specific unit tests
+      env:
+        ConnectionStrings__DefaultConnection: "Host=localhost;Port=5432;Database=${{ env.TEST_DB_NAME }};Username=${{ env.TEST_DB_USER }};Password=${{ env.TEST_DB_PASSWORD }}"
+        ASPNETCORE_ENVIRONMENT: "CI"
       run: |
+        set -euo pipefail
+        echo "::group::Run Unit Tests"
         dotnet test \
           --configuration Release \
           --no-build \
@@ -80,33 +125,59 @@ jobs:
           /p:CollectCoverage=true \
           /p:CoverletOutputFormat=cobertura \
           /p:CoverletOutput=./TestResults/coverage/
-          
-    - name: Run Egyptian VAT calculation tests
+        echo "::endgroup::"
+
+    - name: Collect Test Diagnostics on Failure
+      if: failure()
       run: |
-        dotnet test StationeryStore.Tests/VatCalculatorTests.cs \
-          --configuration Release \
-          --logger "trx;LogFileName=vat-tests.xml"
-          
+        set -euo pipefail
+        mkdir -p diagnostics || true
+        echo "=== TEST STDOUT ===" > diagnostics/test-diagnostics.txt || true
+        if [ -d TestResults ]; then
+          tail -n 500 TestResults/* || true
+        fi
+        echo "=== SYSTEM LOGS (last 200 lines) ===" >> diagnostics/test-diagnostics.txt || true
+        journalctl -n 200 || true
+      continue-on-error: true
+
     - name: Upload test results
       uses: actions/upload-artifact@v3
       if: always()
       with:
         name: test-results
         path: TestResults/
-        
+
+    - name: Upload diagnostics
+      uses: actions/upload-artifact@v3
+      if: failure()
+      with:
+        name: diagnostics
+        path: diagnostics/
+    
+    - name: Run Egyptian VAT calculation tests
+      env:
+        ConnectionStrings__DefaultConnection: "Host=localhost;Port=5432;Database=${{ env.TEST_DB_NAME }};Username=${{ env.TEST_DB_USER }};Password=${{ env.TEST_DB_PASSWORD }}"
+      run: |
+        set -euo pipefail
+        dotnet test StationeryStore.Tests/StationeryStore.Tests.csproj \
+          --configuration Release \
+          --no-build \
+          --filter "Category=VAT" \
+          --logger "trx;LogFileName=vat-tests.xml"
+
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v3
       with:
         file: ./TestResults/coverage/coverage.cobertura.xml
         flags: unittests
         name: codecov-egypt
-        
+
     - name: Check Egyptian code standards
       run: |
-        # Check for Arabic comments (allowed in Egyptian codebase)
-        echo "Checking code standards..."
+        set -euo pipefail
+        # Check for formatting/code style issues
         dotnet format --verify-no-changes --verbosity diagnostic
-        
+
     - name: SonarCloud Scan
       uses: SonarSource/sonarcloud-github-action@master
       env:
@@ -117,7 +188,7 @@ jobs:
           /d:sonar.exclusions="**/Migrations/**,**/wwwroot/**"
           /d:sonar.coverage.exclusions="**Test*.cs,**/Migrations/**,**/Program.cs"
           /d:sonar.cpd.exclusions="**/Migrations/**"
-          
+
   docker-build:
     name: Build Docker Image (Egypt Tag)
     needs: build-and-test
@@ -168,6 +239,14 @@ jobs:
     environment: staging-egypt
     
     steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Azure Login
+      uses: azure/login@v1
+      with:
+        creds: ${{ secrets.AZURE_CREDENTIALS }}
+
     - name: Deploy to Azure Container Apps
       uses: azure/container-apps-deploy-action@v1
       with:
@@ -190,6 +269,9 @@ jobs:
           -g ${{ secrets.AZURE_RESOURCE_GROUP }} \
           --command "dotnet run --seed-egyptian-data"
           
+    - name: Install jq
+      run: sudo apt-get update && sudo apt-get install -y jq
+
     - name: Health check staging
       run: |
         curl --retry 5 --retry-delay 10 \
