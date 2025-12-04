@@ -1,0 +1,29 @@
+services:
+  # The Application
+  stationery-app:
+    build:
+      context: .
+      dockerfile: StationeryStore/Dockerfile
+    ports:
+      - "8080:80"
+      - "8443:443"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      # We use the container name 'sql-server-db' as the hostname
+      - ConnectionStrings__DefaultConnection=Server=sql-server-db;Database=StationeryDb;User Id=sa;Password=YourStrong!Password123;TrustServerCertificate=True;
+    depends_on:
+      - sql-server-db
+
+  # The Database (Local Dev)
+  sql-server-db:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    environment:
+      - ACCEPT_EULA=Y
+      - MSSQL_SA_PASSWORD=YourStrong!Password123
+    ports:
+      - "1433:1433"
+    volumes:
+      - sql_data:/var/opt/mssql
+
+volumes:
+  sql_data:
