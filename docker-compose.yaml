@@ -3,13 +3,13 @@ services:
   stationery-app:
     build:
       context: .
-      dockerfile: StationeryStore/Dockerfile
+      # FIXED: Dockerfile path is now the root
+      dockerfile: Dockerfile 
     ports:
       - "8080:80"
       - "8443:443"
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
-      # We use the container name 'sql-server-db' as the hostname
       - ConnectionStrings__DefaultConnection=Server=sql-server-db;Database=StationeryDb;User Id=sa;Password=YourStrong!Password123;TrustServerCertificate=True;
     depends_on:
       - sql-server-db

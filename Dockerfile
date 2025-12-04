@@ -1,33 +1,27 @@
 # STAGE 1: Build
-# We use the SDK image (heavy, contains compilers) only for building
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 WORKDIR /src
 
-# Copy ONLY the csproj file first
-# This isolates the "Restore" step. 
-# If you change code but not dependencies, Docker skips this step (Cache Hit!)
-COPY ["StationeryStore/StationeryStore.csproj", "StationeryStore/"]
-RUN dotnet restore "StationeryStore/StationeryStore.csproj"
-
-# Copy the rest of the code
+# Copy all source code into the build context
+# This is required because 'dotnet restore' needs access to all project files.
 COPY . .
-WORKDIR "/src/StationeryStore"
 
-# Build and Publish (Release mode is crucial for performance)
-RUN dotnet build "StationeryStore.csproj" -c Release -o /app/build
-RUN dotnet publish "StationeryStore.csproj" -c Release -o /app/publish /p:UseAppHost=false
+# Restore dependencies for all projects
+# If a Solution (.sln) file exists, dotnet restore will automatically use it.
+RUN dotnet restore
+
+# Build and Publish the API project (the entry point)
+# The application starts from the API layer.
+WORKDIR /src/StationeryStore.API
+RUN dotnet publish "StationeryStore.API.csproj" -c Release -o /app/publish /p:UseAppHost=false
 
 # STAGE 2: Run
-# We use the ASP.NET runtime image (lightweight, no compilers)
-# This reduces attack surface (hackers can't compile malware inside the container)
+# Use the lightweight ASP.NET runtime image for the final container
 FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS final
 WORKDIR /app
 EXPOSE 80
 EXPOSE 443
-
-# Create a non-root user for security (Best Practice)
-# By default, Docker runs as root. If compromised, the attacker has root inside the container.
 USER app
 
 COPY --from=build /app/publish .
-ENTRYPOINT ["dotnet", "StationeryStore.dll"]
+ENTRYPOINT ["dotnet", "StationeryStore.API.dll"]

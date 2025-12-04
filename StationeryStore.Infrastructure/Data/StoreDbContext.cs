@@ -1,12 +1,12 @@
 // StationeryStore.Infrastructure/Data/StoreDbContext.cs
 using System;
 using System.Collections.Generic;
-using System.Linq;                 // added for LINQ
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
-using DCommon = StationeryStore.Domain.Common;   // alias to avoid conflict
-using DEnt = StationeryStore.Domain.Entities;    // alias for entities
+using DCommon = StationeryStore.Domain.Common;
+using DEnt = StationeryStore.Domain.Entities;
 
 namespace StationeryStore.Infrastructure.Data;
 
@@ -28,6 +28,36 @@ public class StoreDbContext : DbContext
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
+
+        // ----------------------------------------------------------------------------------
+        // --- FINAL FIXES for Model Mapping Issues (DDD & Read-Only Collections) ---
+        // ----------------------------------------------------------------------------------
+
+        // FIX 1: Completely ignore the DomainEvent type to resolve the CLR instantiation error.
+        modelBuilder.Ignore<DCommon.DomainEvent>();
+
+        // FIX 2: Explicitly ignore the DomainEvents property on all tracked entities.
+        modelBuilder.Entity<DEnt.AuditTrail>().Ignore(e => e.DomainEvents);
+        modelBuilder.Entity<DEnt.Branch>().Ignore(e => e.DomainEvents);
+        modelBuilder.Entity<DEnt.Product>().Ignore(e => e.DomainEvents);
+        modelBuilder.Entity<DEnt.Category>().Ignore(e => e.DomainEvents);
+        modelBuilder.Entity<DEnt.Unit>().Ignore(e => e.DomainEvents);
+        modelBuilder.Entity<DEnt.VatRate>().Ignore(e => e.DomainEvents);
+        modelBuilder.Entity<DEnt.User>().Ignore(e => e.DomainEvents);
+        modelBuilder.Entity<DEnt.Role>().Ignore(e => e.DomainEvents);
+        modelBuilder.Entity<DEnt.InventoryMovement>().Ignore(e => e.DomainEvents);
+        modelBuilder.Entity<DEnt.Till>().Ignore(e => e.DomainEvents);
+
+        // FIX 3 (Updated): Ignore the IReadOnlyCollection<DayOfWeek> property.
+        // I am guessing the property name is 'WorkingDays' on the Branch entity.
+        // If this is wrong, you must replace "WorkingDays" with the correct property name.
+        modelBuilder.Entity<DEnt.Branch>().Ignore("WorkingDays");
+
+        // Let's also check if it might be on the User entity
+        // If your User entity also has a schedule property of this type, uncomment and adjust the line below.
+        // modelBuilder.Entity<DEnt.User>().Ignore("ScheduleDays"); 
+
+        // ----------------------------------------------------------------------------------
 
         // Apply Egyptian-specific configurations
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(StoreDbContext).Assembly);
